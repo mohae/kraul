@@ -1,9 +1,24 @@
 package app
 
-import "github.com/mohae/kraul/indexer"
+import (
+	"fmt"
+
+	"github.com/mohae/contour"
+	"github.com/mohae/geomi"
+)
 
 // Index indexes the site at the starturl. URLs not in the startUrl domain
 // are not crawled
 func Index(startUrl string) (string, error) {
-	return indexer.Index(startUrl)
+	spider, err := geomi.NewSpider(startUrl)
+	if err != nil {
+		fmt.Printf("Could not create spider: %q", err)
+		return "", err
+	}
+	fetchDelay := contour.GetInt("wait")
+	if fetchDelay > 0 {
+		spider.SetFetchInterval(int64(fetchDelay))
+	}
+	msg, err := spider.Crawl(4)
+	return msg, err
 }
